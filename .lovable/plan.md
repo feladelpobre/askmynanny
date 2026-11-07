@@ -1,28 +1,33 @@
-# Pull request text (copy and paste, no code changes)
+# Fix "Page not found" on Netlify
 
-## Title
-feat: askmynanny UI preview, employer nanny search, profiles and nanny registration
+## Why it happens
+The project is set up by default to be hosted on Cloudflare-style servers. Netlify builds it, but can't find a homepage in the output, so it shows its own 404 page. Your app pages are fine; the build just isn't packaged for Netlify.
 
-## Description
+## What I'll change
+1. Add a `netlify.toml` file at the project root that tells Netlify:
+   - build command: `npm run build`
+   - build for Netlify, not Cloudflare (`NITRO_PRESET = "netlify"`)
+   - use Node 22
+2. If the existing build config ignores that setting, set the Netlify target directly in `vite.config.ts` instead.
+3. Run a Netlify-style build in the sandbox and confirm the output has the Netlify server function and static files.
+4. Add a short "Deploying to Netlify" section to the README.
 
-### Summary
-Adds a front-end-only preview of askmynanny, a platform where nannies build a verified profile with their work history and families search for trusted care. All data is placeholder; there is no backend yet.
+This does not affect publishing on Lovable.
 
-### What's included
-- **Home (`/`)**: welcome page with two entry points, "I'm hiring" and "I'm a nanny".
-- **Employer search (`/find`)**: keyword search plus filters for location, gender, max age, max expected salary, skills and "Verified ID only"; nanny cards show photo, age, location, rating, years of experience, top skills and the verified badge.
-- **Nanny profile (`/nanny/$id`)**: about, education, languages, expected salary, skills, benefits wanted, and an employment history timeline (employer, dates, location, salary, benefits, reason for leaving, employer review with stars).
-- **Nanny registration (`/register`)**: 5-step form (Personal info, Education & skills, Work history with multiple employers, ID verification upload, Review & submit) ending in a success screen.
-- **Privacy**: government IDs are never displayed; profiles only show an "ID Verified" badge.
-- **Design system**: warm cream, teal and coral tokens in `styles.css`; Fraunces + Nunito Sans fonts; shared header with navigation; per-page SEO titles and descriptions.
-- **Sample data**: 4 mock nanny profiles with generated portraits (`src/lib/nannies.ts`, `src/assets/`).
+## After merging
+In Netlify: Site settings → Build & deploy, clear any custom "Publish directory" or build command so the values from `netlify.toml` are used, then trigger a new deploy.
 
-### Not included / follow-ups
-- No persistence: the registration form does not save anything and file uploads are not stored.
-- No authentication, real ID verification, or employer review submission flow.
-- Salary filter assumes a single currency.
+## PR text (for your current PR, unchanged)
 
-### How to test
-1. Run the app and open `/find`; try the filters and the search bar.
-2. Click a nanny card and check the profile and employment history.
-3. Open `/register`, step through all 5 steps and submit to see the confirmation screen.
+**Title:** feat: askmynanny UI preview, employer nanny search, profiles and nanny registration
+
+**Description:**
+Front-end-only preview of askmynanny: nannies build verified profiles with work history, and families search for care. All data is placeholder; there is no backend yet.
+
+- Home (`/`): "I'm hiring" / "I'm a nanny" entry points
+- Employer search (`/find`): search plus filters (location, gender, age, salary, skills, verified only)
+- Nanny profile (`/nanny/$id`): details plus employment history (salary, benefits, leave reason, employer reviews)
+- Registration (`/register`): 5-step form including a private ID upload; profiles only show an "ID Verified" badge
+- Warm design system (Fraunces + Nunito Sans), 4 mock nannies with generated portraits
+
+Not included: saving data, sign-in, real ID verification.
