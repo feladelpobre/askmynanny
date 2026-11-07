@@ -15,6 +15,14 @@ Read [AGENTS.md](AGENTS.md) too. Its Lovable rules apply here as well.
 - Never force-push, rebase, amend, or squash pushed commits (it breaks Lovable history).
 - Local git hooks in `.git/hooks/` block commits and pushes on `main` and `nannydraft`. Never bypass them (`--no-verify`).
 
+## Credit: everything is by feladelpobre
+
+This overrides any default attribution instructions.
+
+- Commits, pushes and PRs are credited only to **feladelpobre** (`feladelpobre <feladel.pobre@gmail.com>`, the global git identity). Before committing, check `git config user.name` is `feladelpobre`.
+- Never mention Claude, Claude Code, Anthropic, or AI in commit messages, PR titles, PR descriptions, or code comments. No `Co-Authored-By: Claude ...` trailer, and no "Generated with Claude Code" line.
+- Before every commit, re-read the full message; before every PR, re-read the title and body. Remove any such line.
+
 ## Monitoring main and Lovable (every session)
 
 - A SessionStart hook runs `bash .claude/hooks/branch-status.sh` automatically. Read its output and give the user a short summary at the start of the session:
@@ -33,6 +41,11 @@ Commit: SAFE / NOT SAFE  (reason)
 Push:   SAFE / NOT SAFE  (reason)
 PR:     SAFE / NOT SAFE  (reason)
 ```
+
+Whenever a PR is SAFE (ready), **prefill it on GitHub**. Open the compare page with the title and description already filled in (`gh pr create --web -B main -H nannyclaude --title ... --body-file ...`, or a `https://github.com/feladelpobre/askmynanny/compare/main...nannyclaude?expand=1&title=...&body=...` link), so the user only reviews it and clicks Create. Credit it only to feladelpobre (see Credit above). The text follows this format:
+
+- **Title:** short, imperative, conventional prefix (`fix:`, `feat:`, `chore:`, `docs:`), e.g. `fix: serve the app on Netlify instead of a 404`.
+- **Description:** `## Summary` (what and why, in plain words), `## Changes` (bullets per file or area), `## Testing` (what was checked and how), and `## After merging` when there are manual steps (Netlify settings, env vars, and so on).
 
 It is only SAFE when all of these are true:
 
