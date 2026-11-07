@@ -1,7 +1,7 @@
 # Fix "Page not found" on Netlify
 
 ## Why it happens
-The project is set up by default to be hosted on Cloudflare-style servers. Netlify builds it, but can't find a homepage in the output, so it shows its own 404 page. Your app pages are fine; the build just isn't packaged for Netlify.
+The project is set up by default to be hosted on Cloudflare-style servers. Netlify builds it, but can't find a homepage in the output, so it shows its own 404 page. A missing `index.html` is a symptom, not the cause: this app builds its pages on a server instead of shipping a fixed `index.html`, so adding one by hand won't help. Your app pages are fine; the build just isn't packaged for Netlify.
 
 ## What I'll change
 1. Add a `netlify.toml` file at the project root that tells Netlify:
