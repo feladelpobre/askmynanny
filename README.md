@@ -24,3 +24,9 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Deploying to Netlify
+
+Netlify settings come from [`netlify.toml`](netlify.toml): build with `bun run build`, publish `dist`, Node 22, and `NITRO_PRESET=netlify` so the server-rendered app is packaged as a Netlify function rather than for Cloudflare.
+
+In Netlify (Site configuration → Build & deploy), leave **Build command** and **Publish directory** empty so the values in `netlify.toml` are used, then trigger a new deploy. Publishing on Lovable is not affected.
