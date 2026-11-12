@@ -8,7 +8,7 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 // Netlify sets NETLIFY=true during its builds; only then switch the server output to Netlify.
 // Lovable publishing keeps the default target.
-const onNetlify = process.env.NETLIFY === "true";
+const onNetlify = process.env["NETLIFY"] === "true";
 
 export default defineConfig({
   tanstackStart: {
