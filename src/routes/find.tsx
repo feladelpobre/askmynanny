@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { MapPin, Search, Briefcase } from "lucide-react";
 import { SiteHeader, VerifiedBadge, Stars } from "@/components/SiteHeader";
+import { SearchAssistant } from "@/components/SearchAssistant";
 import { nannies, allSkills, allLocations, avgRating } from "@/lib/nannies";
 
 export const Route = createFileRoute("/find")({
@@ -119,6 +120,7 @@ function FindPage() {
           </section>
         </div>
       </main>
+      <SearchAssistant />
     </div>
   );
 }
