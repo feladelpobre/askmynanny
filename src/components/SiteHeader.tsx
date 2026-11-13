@@ -1,28 +1,25 @@
 import { Link } from "@tanstack/react-router";
-import { Heart } from "lucide-react";
+import { Logo } from "@/components/Logo";
 import { useAuth } from "@/lib/auth";
 
 export function SiteHeader() {
   const { session } = useAuth();
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <Link to="/" className="flex items-center gap-2 font-display text-xl font-semibold text-primary">
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-primary text-primary-foreground">
-            <Heart className="h-4 w-4" fill="currentColor" />
-          </span>
-          askmynanny
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4 py-4 sm:px-5">
+        <Link to="/" aria-label="askmynanny home">
+          <Logo />
         </Link>
-        <nav className="flex items-center gap-2 text-sm font-semibold">
-          <Link to="/find" className="rounded-full px-4 py-2 text-foreground hover:bg-secondary" activeProps={{ className: "bg-secondary" }}>
+        <nav className="flex items-center gap-1 text-sm font-semibold sm:gap-2">
+          <Link to="/find" className="hidden whitespace-nowrap rounded-full px-4 py-2 text-foreground hover:bg-secondary md:inline-block" activeProps={{ className: "bg-secondary" }}>
             Find a Nanny
           </Link>
           {session ? (
-            <Link to="/account" className="rounded-full bg-accent px-4 py-2 text-accent-foreground hover:opacity-90">My account</Link>
+            <Link to="/account" className="whitespace-nowrap rounded-full bg-accent px-4 py-2 text-accent-foreground hover:opacity-90">My account</Link>
           ) : (
             <>
-              <Link to="/login" className="hidden rounded-full px-4 py-2 text-foreground hover:bg-secondary sm:inline-block">Sign in</Link>
-              <Link to="/register" className="rounded-full bg-accent px-4 py-2 text-accent-foreground hover:opacity-90">Join as a Nanny</Link>
+              <Link to="/login" className="whitespace-nowrap rounded-full px-3 py-2 text-foreground hover:bg-secondary sm:px-4">Sign in</Link>
+              <Link to="/register" className="whitespace-nowrap rounded-full bg-accent px-4 py-2 text-accent-foreground hover:opacity-90">Join<span className="hidden sm:inline"> as a Nanny</span></Link>
             </>
           )}
         </nav>

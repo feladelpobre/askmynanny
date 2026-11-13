@@ -53,7 +53,7 @@ function LoginPage() {
   async function verifyCode(e: FormEvent) {
     e.preventDefault();
     setError("");
-    if (!/^\d{6}$/.test(code.trim())) return setError("Enter the 6-digit code from your email.");
+    if (!/^\d{6,10}$/.test(code.trim())) return setError("Enter the code from your email.");
     setBusy(true);
     const { error } = await supabase.auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
     setBusy(false);
@@ -66,7 +66,7 @@ function LoginPage() {
       <SiteHeader />
       <main className="mx-auto max-w-md px-5 py-12">
         <h1 className="font-display text-4xl font-semibold">Sign in or join</h1>
-        <p className="mt-2 text-muted-foreground">We email you a 6-digit code. No password to remember, and fake sign-ups can't get past it.</p>
+        <p className="mt-2 text-muted-foreground">We email you a one-time code. No password to remember, and fake sign-ups can't get past it.</p>
 
         {step === "email" ? (
           <form onSubmit={sendCode} className="mt-8 space-y-5 rounded-3xl border border-border bg-card p-6 shadow-soft">
@@ -95,9 +95,9 @@ function LoginPage() {
           </form>
         ) : (
           <form onSubmit={verifyCode} className="mt-8 space-y-5 rounded-3xl border border-border bg-card p-6 shadow-soft">
-            <p className="text-sm">We sent a 6-digit code to <strong>{email}</strong>. It expires soon, so enter it now.</p>
+            <p className="text-sm">We sent a code to <strong>{email}</strong>. It expires soon, so enter it now.</p>
             <label className="block text-sm font-semibold">Code
-              <input id="otp" inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} className={input + " mt-1 text-center font-mono text-2xl tracking-[0.5em]"} placeholder="••••••" />
+              <input id="otp" inputMode="numeric" autoComplete="one-time-code" maxLength={10} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))} className={input + " mt-1 text-center font-mono text-2xl tracking-[0.3em]"} placeholder="••••••••" />
             </label>
             {error && <p role="alert" className="text-sm font-semibold text-destructive">{error}</p>}
             <button disabled={busy} className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-6 py-3 font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-60">
