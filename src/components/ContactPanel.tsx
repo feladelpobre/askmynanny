@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Lock, Send } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { EmployerDocsDisclaimer } from "@/components/RequirementsNotice";
 import { canContact, type ReviewStatus } from "@/lib/verification";
 import type { Nanny } from "@/lib/nannies";
 
@@ -62,6 +63,7 @@ export function ContactPanel({ nanny }: { nanny: Nanny }) {
     <section className={box}>
       <h2 className="flex items-center gap-2 font-display text-xl font-semibold"><Lock className="h-5 w-5 text-primary" />Contact {nanny.name.split(" ")[0]}</h2>
       <div className="mt-3">{body}</div>
+      <EmployerDocsDisclaimer audience="family" className="mt-4" />
     </section>
   );
 }

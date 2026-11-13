@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BadgeCheck, Camera, FileCheck2, Mail, ShieldCheck } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
+import { EmployerDocsDisclaimer, IdRequiredNotice } from "@/components/RequirementsNotice";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -16,10 +17,10 @@ export const Route = createFileRoute("/register")({
 });
 
 const steps = [
-  { icon: Mail, title: "Sign up with your email", text: "We send a 6-digit code to confirm it's really you." },
+  { icon: Mail, title: "Sign up with your email", text: "We send a one-time code to confirm it's really you." },
   { icon: FileCheck2, title: "Build your profile", text: "Skills, languages, the ages of children you've cared for, salary in pesos, and your work history." },
-  { icon: Camera, title: "Verify your identity", text: "Upload your profile photo and government ID, then take a live photo holding your ID with your camera." },
-  { icon: BadgeCheck, title: "Add clearances and certificates", text: "NBI, police or barangay clearance, TESDA NC II, first aid and more. Each approved one adds a badge." },
+  { icon: Camera, title: "Verify your identity (required)", text: "A must for everyone: upload your profile photo and a valid government ID, then take a live photo holding your ID with your camera." },
+  { icon: BadgeCheck, title: "Add clearances and certificates (optional)", text: "NBI, police or barangay clearance, TESDA NC II, first aid and more. Each approved one adds a badge. You don't have to pay for these to join." },
   { icon: ShieldCheck, title: "Get Fully Verified", text: "An admin reviews your documents. Then families can find you and contact you through askmynanny." },
 ];
 
@@ -38,6 +39,8 @@ function RegisterPage() {
             </li>
           ))}
         </ol>
+        <IdRequiredNotice className="mt-6" />
+        <EmployerDocsDisclaimer audience="nanny" className="mt-3" />
         <Link to="/login" search={{ as: "nanny" }} className="mt-8 inline-flex rounded-full bg-primary px-8 py-3 font-semibold text-primary-foreground hover:opacity-90">Start my profile</Link>
         <p className="mt-3 text-xs text-muted-foreground">You must be 18 or older. We follow the Data Privacy Act (RA 10173) and the Kasambahay Law (RA 10361).</p>
       </main>

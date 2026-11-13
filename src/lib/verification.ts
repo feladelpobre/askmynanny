@@ -7,7 +7,7 @@ export type ReviewStatus = Enums<"review_status">;
 export const DOCUMENT_LABELS: Record<DocumentKind, string> = {
   profile_photo: "Profile photo",
   id_live_photo: "Live photo holding your ID",
-  government_id: "Government ID (PhilSys, UMID, passport, driver's license, postal ID)",
+  government_id: "Government ID",
   nbi_clearance: "NBI clearance",
   police_clearance: "Police clearance",
   barangay_clearance: "Barangay clearance",
@@ -87,4 +87,45 @@ const SAFE_NAME = /[^a-zA-Z0-9._-]/g;
 export function documentPath(userId: string, kind: DocumentKind, fileName: string, now = Date.now()): string {
   const clean = fileName.replace(SAFE_NAME, "_").replace(/\.{2,}/g, ".").slice(-60) || "file";
   return `${userId}/${kind}-${now}-${clean}`;
+}
+
+/** Government IDs accepted for identity verification. */
+export const ACCEPTED_IDS = [
+  "PhilSys National ID / ePhilID",
+  "Passport",
+  "Driver's license",
+  "UMID / SSS ID",
+  "PRC ID",
+  "Postal ID",
+  "Voter's ID or voter's certification",
+  "Senior citizen ID",
+  "PWD ID",
+];
+
+/**
+ * Pre-employment documents the hiring employer may require under the Kasambahay Law
+ * (RA 10361, Sec. 12), at the employer's cost. askmynanny never requires them.
+ */
+export const EMPLOYER_REQUESTED_DOCUMENTS: DocumentKind[] = ["medical_certificate", "police_clearance", "barangay_clearance", "nbi_clearance"];
+
+/** Days before a document's "valid until" date when the owner is reminded to renew it. */
+export const EXPIRY_REMINDER_DAYS = 28;
+
+export type ExpiryState = { state: "none" | "valid" | "expiring" | "expired"; days: number | null };
+
+/**
+ * Where a document stands against its "valid until" date (inclusive), compared with
+ * today's date as YYYY-MM-DD. Same rule the database uses for badges.
+ */
+export function expiryState(expiresOn: string | null | undefined, today: string): ExpiryState {
+  if (!expiresOn) return { state: "none", days: null };
+  const days = Math.round((Date.parse(`${expiresOn}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
+  if (Number.isNaN(days)) return { state: "none", days: null };
+  if (days < 0) return { state: "expired", days };
+  return { state: days <= EXPIRY_REMINDER_DAYS ? "expiring" : "valid", days };
+}
+
+/** Today's date as YYYY-MM-DD in the Philippines (UTC+8). */
+export function todayInManila(now = Date.now()): string {
+  return new Date(now + 8 * 3_600_000).toISOString().slice(0, 10);
 }

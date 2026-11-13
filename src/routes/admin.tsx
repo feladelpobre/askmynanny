@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useAuth } from "@/lib/auth";
 import { formatPeso } from "@/lib/locations";
-import { BADGE_LABELS, DOCUMENT_LABELS, STATUS_LABELS, type ReviewStatus } from "@/lib/verification";
+import { BADGE_LABELS, DOCUMENT_LABELS, STATUS_LABELS, expiryState, todayInManila, type ReviewStatus } from "@/lib/verification";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin review — askmynanny" }, { name: "robots", content: "noindex" }] }),
@@ -146,7 +146,8 @@ function ApplicantCard({ a, onChange }: { a: Applicant; onChange: () => Promise<
               : <a href={d.url} target="_blank" rel="noreferrer" className="grid aspect-video place-items-center rounded-xl bg-muted text-sm font-semibold"><span className="inline-flex items-center gap-1"><ExternalLink className="h-4 w-4" />Open file</span></a>}
             <figcaption className="mt-2 text-sm">
               <p className="font-semibold">{DOCUMENT_LABELS[d.kind]}</p>
-              <p className="text-xs text-muted-foreground">{d.status}{d.expires_on ? ` · valid until ${d.expires_on}` : ""}</p>
+              <p className="text-xs text-muted-foreground">{d.status}{d.expires_on ? ` · valid until ${d.expires_on}` : ""}
+                {expiryState(d.expires_on, todayInManila()).state === "expired" && <span className="ml-1 font-semibold text-destructive">EXPIRED: don't approve</span>}</p>
               {d.status === "pending" && (
                 <div className="mt-2 flex gap-2">
                   <button onClick={() => void reviewDoc(d.id, "approved")} className="rounded-full bg-verified px-3 py-1 text-xs font-semibold text-white">Approve</button>
