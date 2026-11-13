@@ -1,5 +1,13 @@
+# Netlify deploy config.
+# The app renders pages on a server (TanStack Start + Nitro). By default the
+# build targets Cloudflare, which Netlify can't serve ("Page not found").
+# NITRO_PRESET=netlify makes the build output a Netlify server function
+# (.netlify/functions-internal) plus static files in dist/.
+# Lovable hosting is unaffected: it does not read this file.
+
 [build]
-  command = "npm run build"
+  command = "bun run build"
+  publish = "dist"
 
 [build.environment]
   NITRO_PRESET = "netlify"

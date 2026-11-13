@@ -9,9 +9,9 @@ import { VerifiedBadge } from "@/components/SiteHeader";
 type Msg = ChatTurn & { matches?: AssistantMatch[]; error?: boolean };
 
 const starters = [
-  "Verified nanny in Singapore with infant care",
-  "Someone experienced with special needs",
-  "Nanny under $900 a month who can cook",
+  "Verified nanny in Metro Manila with infant care",
+  "Someone in Cebu who speaks Bisaya",
+  "Nanny under ₱12,000 a month who can cook",
 ];
 
 export function SearchAssistant() {

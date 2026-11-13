@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { nannies } from "./nannies";
+import { sanitizeMessages, keepKnownMatches, type AssistantMatch, type ChatTurn } from "./assistant.logic";
 
-export type ChatTurn = { role: "user" | "assistant"; content: string };
-export type AssistantMatch = { id: string; reason: string };
+export type { ChatTurn, AssistantMatch };
 export type AssistantReply = { reply: string; matches: AssistantMatch[]; error?: string };
 
 const SYSTEM = `You are the askmynanny search assistant for employers.
@@ -12,12 +12,15 @@ Rules:
 - Keep "reply" short (1-3 sentences). Do not repeat each nanny's full details; the app shows cards.
 - Tell employers to open a nanny's profile to contact her.
 - If nobody matches, return no matches and suggest loosening a requirement.
-- Salaries are expected monthly amounts in USD.`;
+- All nannies are in the Philippines. Salaries are expected monthly amounts in Philippine pesos (PHP).
+- Never filter, rank or comment on age, gender, appearance, religion or ethnicity. If asked, explain that
+  askmynanny doesn't match on these (Philippine anti-discrimination law) and offer to search by skills,
+  experience, location or salary instead.`;
 
 function publicProfiles() {
   return nannies.map((n) => ({
-    id: n.id, name: n.name, age: n.age, gender: n.gender, location: n.location,
-    education: n.education, yearsExperience: n.years, expectedSalaryUSD: n.expectedSalary,
+    id: n.id, name: n.name, location: n.location,
+    education: n.education, yearsExperience: n.years, expectedSalaryPHP: n.expectedSalary,
     skills: n.skills, languages: n.languages, benefitsWanted: n.benefitsWanted,
     idVerified: n.verified, about: n.about,
     pastEmployerRatings: n.history.map((h) => h.rating),
@@ -25,14 +28,7 @@ function publicProfiles() {
 }
 
 export const askAssistant = createServerFn({ method: "POST" })
-  .inputValidator((input: { messages: ChatTurn[] }) => {
-    const messages = (input?.messages ?? [])
-      .filter((m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
-      .slice(-12)
-      .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) }));
-    if (messages[messages.length - 1]?.role !== "user") throw new Error("Missing question");
-    return { messages };
-  })
+  .inputValidator((input: { messages: ChatTurn[] }) => ({ messages: sanitizeMessages(input) }))
   .handler(async ({ data }): Promise<AssistantReply> => {
     const { generateResponse, GatewayError } = await import("@lovable.dev/ai-gateway");
     try {
@@ -67,11 +63,10 @@ export const askAssistant = createServerFn({ method: "POST" })
         },
       });
       const text = extractText(res);
-      const parsed = JSON.parse(text) as { reply: string; matches: AssistantMatch[] };
-      const known = new Set(nannies.map((n) => n.id));
+      const parsed = JSON.parse(text) as { reply: string; matches: unknown };
       return {
         reply: String(parsed.reply ?? ""),
-        matches: (parsed.matches ?? []).filter((m) => known.has(m.id)).slice(0, 6),
+        matches: keepKnownMatches(parsed.matches, nannies.map((n) => n.id)),
       };
     } catch (err) {
       console.error("assistant error", err);
