@@ -1,6 +1,7 @@
 // notify: sends askmynanny email notifications.
 //
-// Called by database triggers (pg_net) with {"type": "profile" | "document" | "contact", "id": "<uuid>"}.
+// Called by database triggers and the daily expiry job (pg_net) with
+// {"type": "profile" | "document" | "contact" | "expiry", "id": "<uuid>"}.
 // The function never trusts the request beyond the id: it reads the current state from the
 // database and only sends emails that state justifies. Every email is recorded in
 // public.notification_log under a unique key, so repeated calls can't send it twice.
@@ -12,11 +13,11 @@
 import { createClient } from "npm:@supabase/supabase-js@2.49.4";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 import {
-  adminNewSubmission, documentRejected, newContactRequest, profileNeedsChanges, profileVerified,
-  submissionReceived, type AccountType, type Mail,
+  adminNewSubmission, documentExpired, documentExpiringSoon, documentRejected, expiryStage, manilaToday,
+  newContactRequest, profileNeedsChanges, profileVerified, submissionReceived, type AccountType, type Mail,
 } from "./templates.ts";
 
-const SITE = Deno.env.get("SITE_URL") ?? "https://askmynanny.lovable.app";
+const SITE = Deno.env.get("SITE_URL") ?? "https://askmynanny.netlify.app";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function serviceKey(): string {
@@ -126,6 +127,18 @@ async function onContact(id: string): Promise<number> {
   return deliver(`contact:${id}`, [[await emailOf(req.nanny_id), newContactRequest({ fullName: nanny?.display_name ?? null, siteUrl: SITE })]]);
 }
 
+/** Daily job: remind 4 weeks before an approved document's "valid until" date, and again once it has expired. */
+async function onExpiry(id: string): Promise<number> {
+  const { data: doc } = await db.from("documents").select("owner_id, kind, status, expires_on").eq("id", id).maybeSingle();
+  if (!doc || doc.status !== "approved" || !doc.expires_on) return 0;
+  const stage = expiryStage(doc.expires_on, manilaToday());
+  if (!stage) return 0;
+  const { data: profile } = await db.from("profiles").select("full_name").eq("id", doc.owner_id).maybeSingle();
+  const base = { fullName: profile?.full_name ?? null, kind: doc.kind, expiresOn: doc.expires_on, siteUrl: SITE };
+  const mail = stage.stage === "soon" ? documentExpiringSoon({ ...base, days: stage.days }) : documentExpired(base);
+  return deliver(`expiry:${stage.stage}:${id}:${doc.expires_on}`, [[await emailOf(doc.owner_id), mail]]);
+}
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
 
@@ -138,7 +151,7 @@ Deno.serve(async (req) => {
     return json({ ok: false, error: "invalid body" }, 400);
   }
   const id = typeof payload.id === "string" && UUID.test(payload.id) ? payload.id : null;
-  const handler = payload.type === "profile" ? onProfile : payload.type === "document" ? onDocument : payload.type === "contact" ? onContact : null;
+  const handler = payload.type === "profile" ? onProfile : payload.type === "document" ? onDocument : payload.type === "contact" ? onContact : payload.type === "expiry" ? onExpiry : null;
   if (!id || !handler) return json({ ok: false, error: "invalid request" }, 400);
   if (!mailConfigured()) return json({ ok: true, sent: 0, note: "mail not configured" });
   try {

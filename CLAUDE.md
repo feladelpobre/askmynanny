@@ -55,7 +55,7 @@ It is only SAFE when all of these are true:
 
 ## Project
 
-- Vite + React + TypeScript, shadcn/ui, Tailwind. Built with Lovable (live: https://askmynanny.lovable.app).
+- Vite + React + TypeScript, shadcn/ui, Tailwind. Built with Lovable. Live site: https://askmynanny.netlify.app (deploys from `main`; askmynanny.lovable.app follows Lovable's `nannydraft` and lags behind).
 - Use **Bun**, not npm: `bun install`, `bun run dev`, `bun run build`, `bun run test`. (`npm install` crashes on this project's `overrides`; Netlify also picks Bun because of `bun.lock`.)
 - Lint: 83 of 88 files on `main` were committed with CRLF line endings, so `bun run lint` fails on Prettier `␍` errors that already exist upstream. Judge lint with `bun x eslint . --rule "prettier/prettier: off"` (expect 0 errors). Don't mass-fix line endings on `nannyclaude`; it would conflict with Lovable's work.
 - A build regenerates `src/routeTree.gen.ts` (auto-generated). If it changed only line endings, revert it with `git checkout -- src/routeTree.gen.ts`.

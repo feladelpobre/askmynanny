@@ -9,8 +9,9 @@ import { useAuth } from "@/lib/auth";
 import { PH_LOCATIONS, formatPeso } from "@/lib/locations";
 import {
   BADGE_LABELS, DOCUMENT_LABELS, EXPIRING_DOCUMENTS, OPTIONAL_DOCUMENTS, REQUIRED_DOCUMENTS, STATUS_LABELS,
-  belowMinimumWage, documentPath, missingRequiredDocuments, type DocumentKind, type ReviewStatus,
+  belowMinimumWage, documentPath, expiryState, missingRequiredDocuments, todayInManila, type DocumentKind, type ReviewStatus,
 } from "@/lib/verification";
+import { EmployerDocsDisclaimer, IdRequiredNotice } from "@/components/RequirementsNotice";
 
 export const Route = createFileRoute("/account")({
   head: () => ({ meta: [{ title: "My account — askmynanny" }, { name: "robots", content: "noindex" }] }),
@@ -154,6 +155,7 @@ function DocumentsCard({ userId, accountType, docs, reload, onProfilePhoto }: {
   return (
     <Card title="Verification documents" note="IDs, live photos and clearances are private. Only askmynanny admins can see them. Your ID is used only to verify you.">
       <div className="space-y-5">
+        <IdRequiredNotice />
         {required.map((k) => {
           const d = latest(k);
           return (
@@ -181,7 +183,8 @@ function DocumentsCard({ userId, accountType, docs, reload, onProfilePhoto }: {
         {accountType === "nanny" && (
           <div className="rounded-2xl border border-dashed border-primary p-4">
             <p className="font-semibold">Clearances and certificates <span className="text-xs font-normal text-muted-foreground">optional, earn badges</span></p>
-            <p className="mt-1 text-sm text-muted-foreground">An ID check isn't a background check. Families trust NBI, police and barangay clearances, plus TESDA and first aid certificates.</p>
+            <p className="mt-1 text-sm text-muted-foreground">Badges help families trust you: NBI, police and barangay clearances, plus TESDA and first aid certificates. For documents with a "valid until" date, we email you 4 weeks before it expires, and the badge is removed once it expires.</p>
+            <EmployerDocsDisclaimer audience="nanny" className="mt-3" />
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
               <select id="optional_kind" className={input} value={optionalKind} onChange={(e) => setOptionalKind(e.target.value as DocumentKind)}>
                 {OPTIONAL_DOCUMENTS.map((k) => <option key={k} value={k}>{DOCUMENT_LABELS[k]}</option>)}
@@ -202,7 +205,7 @@ function DocumentsCard({ userId, accountType, docs, reload, onProfilePhoto }: {
             <ul className="mt-4 space-y-2">
               {docs.filter((d) => OPTIONAL_DOCUMENTS.includes(d.kind)).map((d) => (
                 <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                  <span>{DOCUMENT_LABELS[d.kind]}{d.expires_on ? ` · valid until ${d.expires_on}` : ""}</span>
+                  <span>{DOCUMENT_LABELS[d.kind]}{d.expires_on ? ` · valid until ${d.expires_on}` : ""}<ExpiryNote expiresOn={d.expires_on} /></span>
                   <span className="flex items-center gap-2"><DocStatus d={d} />
                     {d.status === "pending" && <button onClick={() => void remove(d)} aria-label="Remove" className="text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>}
                   </span>
@@ -215,6 +218,13 @@ function DocumentsCard({ userId, accountType, docs, reload, onProfilePhoto }: {
       </div>
     </Card>
   );
+}
+
+function ExpiryNote({ expiresOn }: { expiresOn: string | null }) {
+  const e = expiryState(expiresOn, todayInManila());
+  if (e.state === "expired") return <span className="ml-2 font-semibold text-destructive">Expired: upload a new one</span>;
+  if (e.state === "expiring") return <span className="ml-2 font-semibold text-accent">{e.days === 0 ? "Expires today" : `Expires in ${e.days} day${e.days === 1 ? "" : "s"}`}</span>;
+  return null;
 }
 
 function DocStatus({ d }: { d: Tables<"documents"> }) {

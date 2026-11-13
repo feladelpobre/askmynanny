@@ -140,3 +140,62 @@ export function newContactRequest(p: { fullName: string | null; siteUrl: string 
     FOOTER,
   );
 }
+
+/** Same 4-week window as the app (src/lib/verification.ts EXPIRY_REMINDER_DAYS). */
+export const EXPIRY_REMINDER_DAYS = 28;
+
+/** Today's date as YYYY-MM-DD in the Philippines (UTC+8). */
+export function manilaToday(now = Date.now()): string {
+  return new Date(now + 8 * 3_600_000).toISOString().slice(0, 10);
+}
+
+/** "soon" within 28 days of the "valid until" date (inclusive), "expired" after it, otherwise null. */
+export function expiryStage(expiresOn: string | null, today: string): { stage: "soon" | "expired"; days: number } | null {
+  if (!expiresOn) return null;
+  const days = Math.round((Date.parse(`${expiresOn}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86_400_000);
+  if (Number.isNaN(days)) return null;
+  if (days < 0) return { stage: "expired", days };
+  return days <= EXPIRY_REMINDER_DAYS ? { stage: "soon", days } : null;
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+/** "2026-12-11" -> "Dec 11, 2026". */
+export function formatDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return y && m && d ? `${MONTHS[m - 1]} ${d}, ${y}` : iso;
+}
+
+const OPTIONAL_NOTE = "This document is optional on askmynanny. Under the Kasambahay Law, a hiring employer may ask for it before signing a contract, and the employer pays for it.";
+
+/** To a nanny: an approved clearance or certificate expires within 4 weeks. */
+export function documentExpiringSoon(p: { fullName: string | null; kind: string; expiresOn: string; days: number; siteUrl: string }): Mail {
+  const label = DOCUMENT_LABELS[p.kind] ?? "document";
+  const when = p.days === 0 ? "today" : `in ${p.days} day${p.days === 1 ? "" : "s"}`;
+  return build(
+    `Your ${label} expires ${when}`,
+    `Your ${label} expires ${when}`,
+    [
+      `Hi ${firstName(p.fullName)}, your ${label} is valid until ${formatDate(p.expiresOn)}.`,
+      "If you'd like to keep its badge on your profile, upload a new one before then. Once it expires, the badge is removed automatically.",
+      OPTIONAL_NOTE,
+    ],
+    { label: "Upload a new one", url: accountUrl(p.siteUrl) },
+    FOOTER,
+  );
+}
+
+/** To a nanny: an approved clearance or certificate has expired and its badge was removed. */
+export function documentExpired(p: { fullName: string | null; kind: string; expiresOn: string; siteUrl: string }): Mail {
+  const label = DOCUMENT_LABELS[p.kind] ?? "document";
+  return build(
+    `Your ${label} has expired`,
+    `Your ${label} has expired`,
+    [
+      `Hi ${firstName(p.fullName)}, your ${label} expired on ${formatDate(p.expiresOn)}, so its badge was removed from your profile.`,
+      "You are still Fully Verified. Upload a new one any time to get the badge back.",
+      OPTIONAL_NOTE,
+    ],
+    { label: "Upload a new one", url: accountUrl(p.siteUrl) },
+    FOOTER,
+  );
+}

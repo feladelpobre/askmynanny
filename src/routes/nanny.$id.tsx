@@ -65,7 +65,7 @@ function Profile() {
             </div>
             <p className="mt-1 text-muted-foreground">{n.years} years experience</p>
             {n.sample && <p className="mt-2 inline-block rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">Sample profile</p>}
-            {n.badges && n.badges.length > 0 && <p className="mt-2 flex flex-wrap gap-1.5">{n.badges.map((b) => <span key={b} className="rounded-full bg-verified/15 px-2.5 py-0.5 text-xs font-semibold text-verified">{BADGE_LABELS[b] ?? b}</span>)}</p>}
+            {n.badges && n.badges.length > 0 && <p className="mt-2 flex flex-wrap gap-1.5">{n.badges.map((b) => <span key={b} className="rounded-full bg-verified/15 px-2.5 py-0.5 text-xs font-semibold text-verified">{BADGE_LABELS[b] ?? b}</span>)}<span className="self-center text-xs text-muted-foreground">Uploaded voluntarily and checked by an admin</span></p>}
             <div className="mt-2 flex items-center gap-2"><Stars value={avgRating(n)} /><span className="text-sm text-muted-foreground">{n.history.filter((j) => j.rating).length} employer reviews</span></div>
             <p className="mt-4">{n.about}</p>
             <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
