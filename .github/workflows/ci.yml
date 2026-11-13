@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main, nannyclaude, nannydraft]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-and-build:
+    name: Lint, typecheck, test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # Prettier's line-ending rule is off because most files were committed with
+      # CRLF line endings upstream; every other ESLint rule still applies.
+      - name: Lint
+        run: bun x eslint . --rule "prettier/prettier: off"
+
+      - name: Typecheck
+        run: bun x tsc --noEmit
+
+      - name: Unit tests
+        run: bun run test
+
+      - name: Build for Netlify
+        run: bun run build
+        env:
+          NITRO_PRESET: netlify
+          NETLIFY: "true"
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for hardcoded secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
