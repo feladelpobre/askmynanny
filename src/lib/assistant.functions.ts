@@ -1,8 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { nannies } from "./nannies";
+import { sanitizeMessages, keepKnownMatches, type AssistantMatch, type ChatTurn } from "./assistant.logic";
 
-export type ChatTurn = { role: "user" | "assistant"; content: string };
-export type AssistantMatch = { id: string; reason: string };
+export type { ChatTurn, AssistantMatch };
 export type AssistantReply = { reply: string; matches: AssistantMatch[]; error?: string };
 
 const SYSTEM = `You are the askmynanny search assistant for employers.
@@ -28,14 +28,7 @@ function publicProfiles() {
 }
 
 export const askAssistant = createServerFn({ method: "POST" })
-  .inputValidator((input: { messages: ChatTurn[] }) => {
-    const messages = (input?.messages ?? [])
-      .filter((m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string")
-      .slice(-12)
-      .map((m) => ({ role: m.role, content: m.content.slice(0, 1000) }));
-    if (messages[messages.length - 1]?.role !== "user") throw new Error("Missing question");
-    return { messages };
-  })
+  .inputValidator((input: { messages: ChatTurn[] }) => ({ messages: sanitizeMessages(input) }))
   .handler(async ({ data }): Promise<AssistantReply> => {
     const { generateResponse, GatewayError } = await import("@lovable.dev/ai-gateway");
     try {
@@ -70,11 +63,10 @@ export const askAssistant = createServerFn({ method: "POST" })
         },
       });
       const text = extractText(res);
-      const parsed = JSON.parse(text) as { reply: string; matches: AssistantMatch[] };
-      const known = new Set(nannies.map((n) => n.id));
+      const parsed = JSON.parse(text) as { reply: string; matches: unknown };
       return {
         reply: String(parsed.reply ?? ""),
-        matches: (parsed.matches ?? []).filter((m) => known.has(m.id)).slice(0, 6),
+        matches: keepKnownMatches(parsed.matches, nannies.map((n) => n.id)),
       };
     } catch (err) {
       console.error("assistant error", err);
