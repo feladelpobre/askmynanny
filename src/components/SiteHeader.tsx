@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 
 export function SiteHeader() {
+  const { session } = useAuth();
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-background/85 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
@@ -15,9 +17,14 @@ export function SiteHeader() {
           <Link to="/find" className="rounded-full px-4 py-2 text-foreground hover:bg-secondary" activeProps={{ className: "bg-secondary" }}>
             Find a Nanny
           </Link>
-          <Link to="/register" className="rounded-full bg-accent px-4 py-2 text-accent-foreground hover:opacity-90">
-            Join as a Nanny
-          </Link>
+          {session ? (
+            <Link to="/account" className="rounded-full bg-accent px-4 py-2 text-accent-foreground hover:opacity-90">My account</Link>
+          ) : (
+            <>
+              <Link to="/login" className="hidden rounded-full px-4 py-2 text-foreground hover:bg-secondary sm:inline-block">Sign in</Link>
+              <Link to="/register" className="rounded-full bg-accent px-4 py-2 text-accent-foreground hover:opacity-90">Join as a Nanny</Link>
+            </>
+          )}
         </nav>
       </div>
     </header>

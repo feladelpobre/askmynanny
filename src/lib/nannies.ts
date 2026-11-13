@@ -15,11 +15,12 @@ export type Job = {
   from: string;
   to: string;
   /** Monthly salary in Philippine pesos. */
-  salary: number;
+  salary: number | null;
   benefits: string[];
   leaveReason: string;
-  rating: number;
-  review: string;
+  /** Present only when a past employer has confirmed the job and left a review. */
+  rating?: number;
+  review?: string;
 };
 
 export type Nanny = {
@@ -37,6 +38,10 @@ export type Nanny = {
   verified: boolean;
   about: string;
   history: Job[];
+  /** Public badges from approved clearances and certificates. */
+  badges?: string[];
+  /** Built-in sample profile for the preview; samples can't be contacted. */
+  sample?: boolean;
 };
 
 export const nannies: Nanny[] = [
@@ -84,11 +89,15 @@ export const nannies: Nanny[] = [
   },
 ];
 
+for (const n of nannies) n.sample = true;
+
 export const allSkills = Array.from(new Set(nannies.flatMap((n) => n.skills))).sort();
 /** All searchable locations, whether or not a sample nanny is there yet. */
 export const allLocations: readonly PhLocation[] = PH_LOCATIONS;
-export const avgRating = (n: Nanny) =>
-  n.history.length ? n.history.reduce((s, j) => s + j.rating, 0) / n.history.length : 0;
+export const avgRating = (n: Nanny) => {
+  const rated = n.history.filter((j) => typeof j.rating === "number");
+  return rated.length ? rated.reduce((s, j) => s + (j.rating ?? 0), 0) / rated.length : 0;
+};
 
 export const SALARY_FILTER = { min: 6000, max: 20000, step: 500 } as const;
 
