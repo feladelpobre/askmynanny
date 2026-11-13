@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 import { Check, Lock, Plus, Trash2, Upload, PartyPopper } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
+import { PH_LOCATIONS } from "@/lib/locations";
 
 export const Route = createFileRoute("/register")({
   head: () => ({
@@ -63,12 +64,14 @@ function Register() {
           {step === 0 && (
             <div className="grid gap-4 sm:grid-cols-2">
               <F label="Full name"><input className={input} placeholder="Maria Santos" /></F>
-              <F label="Age"><input type="number" className={input} placeholder="30" /></F>
-              <F label="Gender"><select className={input}><option>Female</option><option>Male</option><option>Prefer not to say</option></select></F>
-              <F label="Current location"><input className={input} placeholder="City, Country" /></F>
-              <F label="Phone"><input className={input} placeholder="+65 ..." /></F>
+              <F label="Current location"><select className={input} defaultValue=""><option value="" disabled>Choose your city or province</option>{PH_LOCATIONS.map((l) => <option key={l}>{l}</option>)}</select></F>
+              <F label="Mobile number"><input type="tel" className={input} placeholder="+63 9XX XXX XXXX" /></F>
               <F label="Email"><input type="email" className={input} placeholder="you@email.com" /></F>
               <F label="About you" full><textarea rows={3} className={input} placeholder="Tell families a little about yourself…" /></F>
+              <label className="flex items-start gap-2 text-sm sm:col-span-2">
+                <input type="checkbox" className="mt-0.5 h-4 w-4 accent-primary" />
+                <span>I confirm I am 18 or older. <span className="text-muted-foreground">This stays private; askmynanny never shows or filters by age.</span></span>
+              </label>
             </div>
           )}
           {step === 1 && (
@@ -76,8 +79,8 @@ function Register() {
               <F label="Highest education"><select className={input}><option>High school</option><option>Vocational / Diploma</option><option>College degree</option><option>Postgraduate</option></select></F>
               <F label="Field / course"><input className={input} placeholder="Early Childhood Education" /></F>
               <F label="Years of experience"><input type="number" className={input} placeholder="5" /></F>
-              <F label="Expected monthly salary"><input className={input} placeholder="$900" /></F>
-              <F label="Languages" full><input className={input} placeholder="English, Tagalog" /></F>
+              <F label="Expected monthly salary (₱)"><input type="number" min={0} step={500} className={input} placeholder="12000" /></F>
+              <F label="Languages" full><input className={input} placeholder="Filipino, English, Cebuano/Bisaya" /></F>
               <div className="sm:col-span-2">
                 <p className="text-sm font-semibold">Skills</p>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -100,10 +103,10 @@ function Register() {
                   </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <F label="Employer / family name"><input className={input} placeholder="The Tan Family" /></F>
-                    <F label="Location"><input className={input} placeholder="Singapore" /></F>
+                    <F label="Location"><input className={input} placeholder="Quezon City" /></F>
                     <F label="From"><input type="month" className={input} /></F>
                     <F label="To"><input type="month" className={input} /></F>
-                    <F label="Salary"><input className={input} placeholder="$850 / month" /></F>
+                    <F label="Monthly salary (₱)"><input type="number" min={0} step={500} className={input} placeholder="10000" /></F>
                     <F label="Benefits received"><input className={input} placeholder="Own room, insurance" /></F>
                     <F label="Reason for leaving" full><input className={input} placeholder="Family relocated" /></F>
                     <F label="Employer contact (for review request)" full><input className={input} placeholder="Email or phone" /></F>

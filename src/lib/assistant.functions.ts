@@ -12,12 +12,15 @@ Rules:
 - Keep "reply" short (1-3 sentences). Do not repeat each nanny's full details; the app shows cards.
 - Tell employers to open a nanny's profile to contact her.
 - If nobody matches, return no matches and suggest loosening a requirement.
-- Salaries are expected monthly amounts in USD.`;
+- All nannies are in the Philippines. Salaries are expected monthly amounts in Philippine pesos (PHP).
+- Never filter, rank or comment on age, gender, appearance, religion or ethnicity. If asked, explain that
+  askmynanny doesn't match on these (Philippine anti-discrimination law) and offer to search by skills,
+  experience, location or salary instead.`;
 
 function publicProfiles() {
   return nannies.map((n) => ({
-    id: n.id, name: n.name, age: n.age, gender: n.gender, location: n.location,
-    education: n.education, yearsExperience: n.years, expectedSalaryUSD: n.expectedSalary,
+    id: n.id, name: n.name, location: n.location,
+    education: n.education, yearsExperience: n.years, expectedSalaryPHP: n.expectedSalary,
     skills: n.skills, languages: n.languages, benefitsWanted: n.benefitsWanted,
     idVerified: n.verified, about: n.about,
     pastEmployerRatings: n.history.map((h) => h.rating),

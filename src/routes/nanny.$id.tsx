@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { MapPin, GraduationCap, Wallet, Languages, ArrowLeft } from "lucide-react";
 import { SiteHeader, VerifiedBadge, Stars } from "@/components/SiteHeader";
 import { nannies, avgRating } from "@/lib/nannies";
+import { formatPeso } from "@/lib/locations";
 
 export const Route = createFileRoute("/nanny/$id")({
   loader: ({ params }) => {
@@ -37,13 +38,13 @@ function Profile() {
               <h1 className="font-display text-4xl font-semibold">{n.name}</h1>
               {n.verified ? <VerifiedBadge /> : <span className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground">Verification pending</span>}
             </div>
-            <p className="mt-1 text-muted-foreground">{n.age} years · {n.gender} · {n.years} years experience</p>
+            <p className="mt-1 text-muted-foreground">{n.years} years experience</p>
             <div className="mt-2 flex items-center gap-2"><Stars value={avgRating(n)} /><span className="text-sm text-muted-foreground">{n.history.length} employer reviews</span></div>
             <p className="mt-4">{n.about}</p>
             <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
               <p className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" />{n.location}</p>
               <p className="flex items-center gap-2"><GraduationCap className="h-4 w-4 text-primary" />{n.education}</p>
-              <p className="flex items-center gap-2"><Wallet className="h-4 w-4 text-primary" />Expects ${n.expectedSalary}/month</p>
+              <p className="flex items-center gap-2"><Wallet className="h-4 w-4 text-primary" />Expects {formatPeso(n.expectedSalary)}/month</p>
               <p className="flex items-center gap-2"><Languages className="h-4 w-4 text-primary" />{n.languages.join(", ")}</p>
             </div>
           </div>
@@ -62,7 +63,7 @@ function Profile() {
                 <span className="text-sm text-muted-foreground">{j.from} – {j.to} · {j.location}</span>
               </div>
               <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
-                <div><dt className="font-semibold">Salary</dt><dd className="text-muted-foreground">{j.salary}</dd></div>
+                <div><dt className="font-semibold">Salary</dt><dd className="text-muted-foreground">{formatPeso(j.salary)} / month</dd></div>
                 <div><dt className="font-semibold">Reason for leaving</dt><dd className="text-muted-foreground">{j.leaveReason}</dd></div>
                 <div className="sm:col-span-2"><dt className="font-semibold">Benefits</dt><dd className="text-muted-foreground">{j.benefits.join(" · ")}</dd></div>
               </dl>
