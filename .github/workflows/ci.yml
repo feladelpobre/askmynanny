@@ -35,7 +35,8 @@ jobs:
       # Prettier's line-ending rule is off because most files were committed with
       # CRLF line endings upstream; every other ESLint rule still applies.
       - name: Lint
-        run: bun x eslint . --rule "prettier/prettier: off"
+        run: |
+          bun x eslint . --rule "prettier/prettier: off"
 
       - name: Typecheck
         run: bun x tsc --noEmit
