@@ -1,1 +1,10 @@
 project_id = "ixanhciolnuxgyglcqaa"
+
+# Both functions are called without a user login token, so they must not require one:
+# - notify: called by database triggers (pg_net). It only accepts an id and re-reads the database.
+# - keep-alive: called daily by cron-job.org with its own x-keep-alive-token header.
+[functions.notify]
+verify_jwt = false
+
+[functions.keep-alive]
+verify_jwt = false
